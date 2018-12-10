@@ -144,9 +144,9 @@ LRESULT Window::HandleMsg( HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam ) noex
 
 	/*********** KEYBOARD MESSAGES ***********/
 	case WM_KEYDOWN:
-		// a skskeyDown message is sent when a key is pressed,
-		// but it will also be sent repeatedly while the key is held down
-		// It takes in alt key combinations, so we need to filter those out
+	// Syskey commands need to be handled to track ALT key (VK_MENU) and F10; WM_SYSKEYDOWN is
+	// sent when a key is pressed and also repeatedly while the key is held. It includes Alt key
+	// combinations, so filter those out when appropriate.
 	case WM_SYSKEYDOWN:
 
 		// Check bit 30 of lParam to see if the key was previously down before this message
