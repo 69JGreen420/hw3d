@@ -145,6 +145,7 @@ void Mouse::TrimBuffer() noexcept
 	}
 }
 
+// On provide wheel scroll updates when the delta exceeds minimum
 void Mouse::OnWheelDelta( int x,int y,int delta ) noexcept
 {
 	wheelDeltaCarry += delta;
