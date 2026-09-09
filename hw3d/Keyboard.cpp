@@ -78,11 +78,15 @@ void Keyboard::Flush() noexcept
 	FlushChar();
 }
 
+// Enables the autorepeat feature for the keyboard. 
+// If enabled, holding down a key will generate repeated key press events.
 void Keyboard::EnableAutorepeat() noexcept
 {
 	autorepeatEnabled = true;
 }
 
+// Disables the autorepeat feature for the keyboard. 
+// If disabled, holding down a key will not generate repeated key press events.
 void Keyboard::DisableAutorepeat() noexcept
 {
 	autorepeatEnabled = false;
@@ -93,6 +97,8 @@ bool Keyboard::AutorepeatIsEnabled() const noexcept
 	return autorepeatEnabled;
 }
 
+// Handles the event when a key is pressed.
+// It updates the keystates and adds a key press event to the keybuffer.
 void Keyboard::OnKeyPressed( unsigned char keycode ) noexcept
 {
 	keystates[keycode] = true;
@@ -100,6 +106,8 @@ void Keyboard::OnKeyPressed( unsigned char keycode ) noexcept
 	TrimBuffer( keybuffer );
 }
 
+// Handles the event when a key is released.
+// It updates the keystates and adds a key release event to the keybuffer.
 void Keyboard::OnKeyReleased( unsigned char keycode ) noexcept
 {
 	keystates[keycode] = false;
@@ -118,9 +126,12 @@ void Keyboard::ClearState() noexcept
 	keystates.reset();
 }
 
-template<typename T>
+// Trims the buffer to ensure it does not exceed the maximum buffer size
+template<typename T> // Template used to allow this function to work with different types of buffers (e.g., keybuffer and charbuffer).
 void Keyboard::TrimBuffer( std::queue<T>& buffer ) noexcept
 {
+	// Ensure the queue does not exceed the maximum buffer size 
+	// by removing the oldest elements if necessary.
 	while( buffer.size() > bufferSize )
 	{
 		buffer.pop();

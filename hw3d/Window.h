@@ -64,6 +64,8 @@ private:
 	static LRESULT CALLBACK HandleMsgThunk( HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam ) noexcept;
 	LRESULT HandleMsg( HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam ) noexcept;
 public:
+	// returns width (in pixels) of client area
+	// Keyboard is a friend class of Window, so it can access private members of Window
 	Keyboard kbd;
 private:
 	int width;

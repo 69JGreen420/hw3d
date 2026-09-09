@@ -67,7 +67,9 @@ public:
 	};
 public:
 	Keyboard() = default;
+	// Delete the copy constructor to prevent copying of the Keyboard object
 	Keyboard( const Keyboard& ) = delete;
+	// Delete the copy assignment operator to prevent copying of the Keyboard object
 	Keyboard& operator=( const Keyboard& ) = delete;
 	// key event stuff
 	bool KeyIsPressed( unsigned char keycode ) const noexcept;

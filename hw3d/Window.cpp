@@ -138,7 +138,16 @@ LRESULT Window::HandleMsg( HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam ) noex
 		PostQuitMessage( 0 );
 		return 0;
 
+	// clear keystate when window loses focus to prevent input getting "stuck"
+	case WM_KILLFOCUS:
+		kbd.ClearState();
+		break;
 	/*********** KEYBOARD MESSAGES ***********/
+
+	// Set as a switch statement to handle different keyboard messages. 
+	// The switch statement allows for easy expansion in the future 
+	// if more keyboard messages need to be handled.
+
 	case WM_KEYDOWN:
 		kbd.OnKeyPressed( static_cast<unsigned char>(wParam) );
 		break;
