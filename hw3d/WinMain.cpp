@@ -39,6 +39,11 @@ int CALLBACK WinMain(
 			DispatchMessage( &msg );
 		}
 
+		if (wnd.kbd.KeyIsPressed(VK_SPACE)) 
+		{
+			MessageBoxA(nullptr, "Something happon!", "The space key is pressed", MB_OK);
+		}
+
 		// check if GetMessage call itself borked
 		if( gResult == -1 )
 		{

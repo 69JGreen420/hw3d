@@ -144,12 +144,20 @@ LRESULT Window::HandleMsg( HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam ) noex
 
 	/*********** KEYBOARD MESSAGES ***********/
 	case WM_KEYDOWN:
+		// a skskeyDown message is sent when a key is pressed,
+		// but it will also be sent repeatedly while the key is held down
+		// It takes in alt key combinations, so we need to filter those out
+	case WM_SYSKEYDOWN:
+
+		// Check bit 30 of lParam to see if the key was previously down before this message
+		// If it was, then this is an autorepeat message and we should ignore it if autorepeat is disabled
 		if( !(lParam & 0x40000000) || kbd.AutorepeatIsEnabled() ) // filter autorepeat
 		{
 			kbd.OnKeyPressed( static_cast<unsigned char>(wParam) );
 		}
 		break;
 	case WM_KEYUP:
+	case WM_SYSKEYUP:
 		kbd.OnKeyReleased( static_cast<unsigned char>(wParam) );
 		break;
 	case WM_CHAR:
