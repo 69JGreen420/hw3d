@@ -25,6 +25,7 @@ class Mouse
 {
 	friend class Window;
 public:
+	// Mouse events
 	class Event
 	{
 	public:
@@ -32,6 +33,8 @@ public:
 		{
 			LPress,
 			LRelease,
+			MPress,
+			MRelease,
 			RPress,
 			RRelease,
 			WheelUp,
@@ -42,6 +45,7 @@ public:
 	private:
 		Type type;
 		bool leftIsPressed;
+		bool middleIsPressed;
 		bool rightIsPressed;
 		int x;
 		int y;
@@ -50,6 +54,7 @@ public:
 			:
 			type( Type::Invalid ),
 			leftIsPressed( false ),
+			middleIsPressed( false ),
 			rightIsPressed( false ),
 			x( 0 ),
 			y( 0 )
@@ -58,6 +63,7 @@ public:
 			:
 			type( type ),
 			leftIsPressed( parent.leftIsPressed ),
+			middleIsPressed( parent.middleIsPressed ),
 			rightIsPressed( parent.rightIsPressed ),
 			x( parent.x ),
 			y( parent.y )
@@ -86,6 +92,10 @@ public:
 		{
 			return leftIsPressed;
 		}
+		bool MiddleIsPressed() const noexcept
+		{
+			return middleIsPressed;
+		}
 		bool RightIsPressed() const noexcept
 		{
 			return rightIsPressed;
@@ -99,6 +109,7 @@ public:
 	int GetPosX() const noexcept;
 	int GetPosY() const noexcept;
 	bool LeftIsPressed() const noexcept;
+	bool MiddleIsPressed() const noexcept;
 	bool RightIsPressed() const noexcept;
 	Mouse::Event Read() noexcept;
 	bool IsEmpty() const noexcept
@@ -110,6 +121,8 @@ private:
 	void OnMouseMove( int x,int y ) noexcept;
 	void OnLeftPressed( int x,int y ) noexcept;
 	void OnLeftReleased( int x,int y ) noexcept;
+	void OnMiddlePressed(int x, int y) noexcept;
+	void OnMiddleReleased(int x, int y) noexcept;
 	void OnRightPressed( int x,int y ) noexcept;
 	void OnRightReleased( int x,int y ) noexcept;
 	void OnWheelUp( int x,int y ) noexcept;
@@ -120,6 +133,7 @@ private:
 	int x;
 	int y;
 	bool leftIsPressed = false;
+	bool middleIsPressed = false;
 	bool rightIsPressed = false;
 	std::queue<Event> buffer;
 };

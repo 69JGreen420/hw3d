@@ -41,6 +41,11 @@ bool Mouse::LeftIsPressed() const noexcept
 	return leftIsPressed;
 }
 
+bool Mouse::MiddleIsPressed() const noexcept
+{
+	return middleIsPressed;
+}
+
 bool Mouse::RightIsPressed() const noexcept
 {
 	return rightIsPressed;
@@ -87,6 +92,22 @@ void Mouse::OnLeftReleased( int x,int y ) noexcept
 	leftIsPressed = false;
 
 	buffer.push( Mouse::Event( Mouse::Event::Type::LRelease,*this ) );
+	TrimBuffer();
+}
+
+void Mouse::OnMiddlePressed(int x, int y) noexcept
+{
+	middleIsPressed = true;
+
+	buffer.push(Mouse::Event(Mouse::Event::Type::MPress, *this));
+	TrimBuffer();
+}
+
+void Mouse::OnMiddleReleased(int x, int y) noexcept
+{
+	middleIsPressed = false;
+
+	buffer.push(Mouse::Event(Mouse::Event::Type::MRelease, *this));
 	TrimBuffer();
 }
 

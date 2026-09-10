@@ -165,11 +165,18 @@ LRESULT Window::HandleMsg( HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam ) noex
 	{
 		POINTS pt = MAKEPOINTS( lParam );
 		mouse.OnMouseMove( pt.x,pt.y );
+		break;
 	}
 	case WM_LBUTTONDOWN:
 	{
 		const POINTS pt = MAKEPOINTS( lParam );
 		mouse.OnLeftPressed( pt.x,pt.y );
+		break;
+	}
+	case WM_MBUTTONDOWN:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnMiddlePressed(pt.x, pt.y);
 		break;
 	}
 	case WM_RBUTTONDOWN:
@@ -182,6 +189,12 @@ LRESULT Window::HandleMsg( HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam ) noex
 	{
 		const POINTS pt = MAKEPOINTS( lParam );
 		mouse.OnLeftReleased( pt.x,pt.y );
+		break;
+	}
+	case WM_MBUTTONUP:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnMiddleReleased(pt.x, pt.y);
 		break;
 	}
 	case WM_RBUTTONUP:
