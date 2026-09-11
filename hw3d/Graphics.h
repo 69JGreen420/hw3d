@@ -5,6 +5,7 @@
 class Graphics
 {
 public:
+	// HWND is a Direct3D device object
 	Graphics( HWND hWnd );
 	Graphics( const Graphics& ) = delete;
 	Graphics& operator=( const Graphics& ) = delete;

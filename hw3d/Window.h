@@ -77,6 +77,8 @@ private:
 	int width;
 	int height;
 	HWND hWnd;
+
+	// Since hWnd doesn't exist, we need a unique_ptr to Graphics
 	std::unique_ptr<Graphics> pGfx;
 };
 

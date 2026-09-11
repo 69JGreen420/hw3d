@@ -1,9 +1,13 @@
 #include "Graphics.h"
 
+// Set the linker settings for us
 #pragma comment(lib,"d3d11.lib")
 
 Graphics::Graphics( HWND hWnd )
 {
+	// Declare buffer information
+	// Values are set to their default
+	// We don't need scaling as we aren't in full screen
 	DXGI_SWAP_CHAIN_DESC sd = {};
 	sd.BufferDesc.Width = 0;
 	sd.BufferDesc.Height = 0;
@@ -23,23 +27,27 @@ Graphics::Graphics( HWND hWnd )
 
 	// create device and front/back buffers, and swap chain and rendering context
 	D3D11CreateDeviceAndSwapChain(
-		nullptr,
+		nullptr, // Default adapter
 		D3D_DRIVER_TYPE_HARDWARE,
-		nullptr,
+		nullptr, // Default software type
 		0,
-		nullptr,
+		nullptr, // Default feature level
 		0,
 		D3D11_SDK_VERSION,
 		&sd,
 		&pSwap,
 		&pDevice,
-		nullptr,
+		nullptr, // Unneeded
 		&pContext
 	);
-}
 
+
+}
+// Delete deallocated pointers
 Graphics::~Graphics()
 {
+	// Check if pointers are valid and release them if true
+
 	if( pContext != nullptr )
 	{
 		pContext->Release();
@@ -56,5 +64,6 @@ Graphics::~Graphics()
 
 void Graphics::EndFrame()
 {
+	// Use the swap chain to present the frame
 	pSwap->Present( 1u,0u );
 }
