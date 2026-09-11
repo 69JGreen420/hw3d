@@ -1,3 +1,7 @@
+// Graphics owns the application's Direct3D 11 device, immediate context, and
+// swap chain. It also defines the per-frame boundary used by the renderer,
+// exposes the back-buffer target and shared camera matrices, and translates
+// Direct3D failures into the engine's exception types.
 #include "Graphics.h"
 #include "dxerr.h"
 #include <sstream>
@@ -23,6 +27,8 @@ Graphics::Graphics( HWND hWnd,int width,int height )
 	width( width ),
 	height( height )
 {
+	// Describe the window-sized swap chain that will provide the back buffer
+	// presented to the user at the end of each frame.
 	DXGI_SWAP_CHAIN_DESC sd = {};
 	sd.BufferDesc.Width = width;
 	sd.BufferDesc.Height = height;
@@ -45,10 +51,12 @@ Graphics::Graphics( HWND hWnd,int width,int height )
 	swapCreateFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	// for checking results of d3d functions
+	// The debug layer supplies extra validation messages in non-release builds.
+	// The GFX_THROW macros below collect those messages when a call fails.
 	HRESULT hr;
 
-	// create device and front/back buffers, and swap chain and rendering context
+	// Create the GPU device, swap chain, and immediate context used for all
+	// rendering commands issued through this Graphics object.
 	GFX_THROW_INFO( D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -64,12 +72,14 @@ Graphics::Graphics( HWND hWnd,int width,int height )
 		&pContext
 	) );
 
-	// gain access to texture subresource in swap chain (back buffer)
+	// Turn the swap chain's back-buffer texture into the engine's standard
+	// RenderTarget abstraction so render passes can bind it like other targets.
 	wrl::ComPtr<ID3D11Texture2D> pBackBuffer;
 	GFX_THROW_INFO( pSwap->GetBuffer( 0,__uuidof(ID3D11Texture2D),&pBackBuffer ) );
 	pTarget = std::shared_ptr<Bind::RenderTarget>{ new Bind::OutputOnlyRenderTarget( *this,pBackBuffer.Get() ) };
 	
-	// viewport always fullscreen (for now)
+	// Set the default viewport to cover the whole window. Individual passes may
+	// change other pipeline state, but this is the initial viewport for drawing.
 	D3D11_VIEWPORT vp;
 	vp.Width = (float)width;
 	vp.Height = (float)height;
@@ -79,18 +89,22 @@ Graphics::Graphics( HWND hWnd,int width,int height )
 	vp.TopLeftY = 0.0f;
 	pContext->RSSetViewports( 1u,&vp );
 	
-	// init imgui d3d impl
+	// Connect ImGui's Direct3D backend to the device and context. The Win32
+	// backend is initialized elsewhere because it needs the application window.
 	ImGui_ImplDX11_Init( pDevice.Get(),pContext.Get() );
 }
 
 Graphics::~Graphics()
 {
+	// Release ImGui's device-side resources before the Direct3D objects owned
+	// by this instance are destroyed.
 	ImGui_ImplDX11_Shutdown();
 }
 
 void Graphics::EndFrame()
 {
-	// imgui frame end
+	// Finish and draw the ImGui command list after the scene has rendered, so
+	// the UI appears on top of the frame.
 	if( imguiEnabled )
 	{
 		ImGui::Render();
@@ -101,6 +115,8 @@ void Graphics::EndFrame()
 #ifndef NDEBUG
 	infoManager.Set();
 #endif
+	// Present the completed back buffer. Sync interval 1 enables vertical
+	// synchronization; device removal is reported with its specific reason.
 	if( FAILED( hr = pSwap->Present( 1u,0u ) ) )
 	{
 		if( hr == DXGI_ERROR_DEVICE_REMOVED )
@@ -116,14 +132,18 @@ void Graphics::EndFrame()
 
 void Graphics::BeginFrame( float red,float green,float blue ) noexcept
 {
-	// imgui begin frame
+	// The color parameters are retained for the public frame API; render-graph
+	// passes now clear their own targets instead of clearing here.
+	// Start a new ImGui frame before any code records UI for this frame.
 	if( imguiEnabled )
 	{
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 	}
-	// clearing shader inputs to prevent simultaneous in/out bind carried over from prev frame
+	// Unbind resources that may be written as render targets later in the frame.
+	// Direct3D rejects simultaneous input/output binding, and these slots can
+	// otherwise retain views from the previous frame.
 	ID3D11ShaderResourceView* const pNullTex = nullptr;
 	pContext->PSSetShaderResources( 0,1,&pNullTex ); // fullscreen input texture
 	pContext->PSSetShaderResources( 3,1,&pNullTex ); // shadow map texture
@@ -131,11 +151,14 @@ void Graphics::BeginFrame( float red,float green,float blue ) noexcept
 
 void Graphics::DrawIndexed( UINT count ) noxnd
 {
+	// Submit an indexed draw using the input assembly and shaders currently
+	// configured by the active render pass.
 	GFX_THROW_INFO_ONLY( pContext->DrawIndexed( count,0u,0u ) );
 }
 
 void Graphics::SetProjection( DirectX::FXMMATRIX proj ) noexcept
 {
+	// Store the projection used by transform constant buffers and render passes.
 	projection = proj;
 }
 
@@ -146,6 +169,8 @@ DirectX::XMMATRIX Graphics::GetProjection() const noexcept
 
 void Graphics::SetCamera( DirectX::FXMMATRIX cam ) noexcept
 {
+	// Store the current view/camera transform for consumers that need it while
+	// constructing draw data.
 	camera = cam;
 }
 
@@ -156,11 +181,13 @@ DirectX::XMMATRIX Graphics::GetCamera() const noexcept
 
 void Graphics::EnableImgui() noexcept
 {
+	// Allow BeginFrame/EndFrame to advance and render the ImGui frame.
 	imguiEnabled = true;
 }
 
 void Graphics::DisableImgui() noexcept
 {
+	// Keep the renderer's frame boundaries active while skipping ImGui work.
 	imguiEnabled = false;
 }
 
@@ -181,23 +208,25 @@ UINT Graphics::GetHeight() const noexcept
 
 std::shared_ptr<Bind::RenderTarget> Graphics::GetTarget()
 {
+	// Return the swap-chain-backed target used to display the final image.
 	return pTarget;
 }
 
 
-// Graphics exception stuff
+// Exception helpers below preserve the failing HRESULT and Direct3D debug
+// messages, then format them into useful diagnostics for the application.
 Graphics::HrException::HrException( int line,const char* file,HRESULT hr,std::vector<std::string> infoMsgs ) noexcept
 	:
 	Exception( line,file ),
 	hr( hr )
 {
-	// join all info messages with newlines into single string
+	// Join all debug-layer messages into one printable string.
 	for( const auto& m : infoMsgs )
 	{
 		info += m;
 		info.push_back( '\n' );
 	}
-	// remove final newline if exists
+	// Avoid leaving a trailing newline in the stored diagnostic.
 	if( !info.empty() )
 	{
 		info.pop_back();
@@ -257,13 +286,13 @@ Graphics::InfoException::InfoException( int line,const char * file,std::vector<s
 	:
 	Exception( line,file )
 {
-	// join all info messages with newlines into single string
+	// Join all debug-layer messages into one printable string.
 	for( const auto& m : infoMsgs )
 	{
 		info += m;
 		info.push_back( '\n' );
 	}
-	// remove final newline if exists
+	// Avoid leaving a trailing newline in the stored diagnostic.
 	if( !info.empty() )
 	{
 		info.pop_back();
