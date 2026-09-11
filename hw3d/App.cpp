@@ -21,5 +21,6 @@ int App::Go()
 
 void App::DoFrame()
 {
+	// Present the frame - this writes over the garbage frame
 	wnd.Gfx().EndFrame();
 }

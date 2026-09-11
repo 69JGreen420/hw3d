@@ -41,13 +41,31 @@ Graphics::Graphics( HWND hWnd )
 		&pContext
 	);
 
+	// Gain access to texture subresource in swap chain (back buffer)
+	ID3D11Resource* pBackBuffer = nullptr;
 
+	// Swap the buffers (0 gives the back buffer)
+	pSwap->GetBuffer(0, __uuidof(ID3D11Resource), reinterpret_cast<void**>(&pBackBuffer));
+
+	// Pass in info so the back buffer knows how to be rendered
+	pDevice->CreateRenderTargetView(
+		pBackBuffer,
+		nullptr,
+		&pTarget
+	);
+
+	// We no longer need the back buffer so it can be released
+	pBackBuffer->Release();
 }
 // Delete deallocated pointers
 Graphics::~Graphics()
 {
 	// Check if pointers are valid and release them if true
 
+	if (pTarget != nullptr)
+	{
+		pTarget->Release();
+	}
 	if( pContext != nullptr )
 	{
 		pContext->Release();
