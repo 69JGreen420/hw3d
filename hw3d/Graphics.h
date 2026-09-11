@@ -11,6 +11,13 @@ public:
 	Graphics& operator=( const Graphics& ) = delete;
 	~Graphics();
 	void EndFrame();
+	void ClearBuffer(float red, float green, float blue) noexcept
+	{
+		// Clear the back buffer to a specific color
+		// 4th parameter is alpha channel, which we don't need
+		const float color[] = { red,green,blue,1.0f };
+		pContext->ClearRenderTargetView(pTarget, color);
+	}
 private:
 	ID3D11Device* pDevice = nullptr;
 	IDXGISwapChain* pSwap = nullptr;

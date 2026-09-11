@@ -15,6 +15,7 @@ float ChiliTimer::Mark() noexcept
 	return frameTime.count();
 }
 
+// Returns the time since the last mark without updating the timer
 float ChiliTimer::Peek() const noexcept
 {
 	return duration<float>( steady_clock::now() - last ).count();
