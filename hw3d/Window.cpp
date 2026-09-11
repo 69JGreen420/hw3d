@@ -138,6 +138,7 @@ std::optional<int> Window::ProcessMessages() noexcept
 
 Graphics& Window::Gfx()
 {
+	// Throw exception if the graphics pointer is not initialized
 	if( !pGfx )
 	{
 		throw CHWND_NOGFX_EXCEPT();

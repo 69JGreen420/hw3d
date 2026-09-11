@@ -1,8 +1,18 @@
+// The body of this file is intended to be included inside a function
+// that provides the `hr` variable. We need a switch on `hr` so the
+// `case` macros used below are valid.
+//
+// When these `.inl` files are mistakenly added to the project as
+// standalone compilation units Visual Studio will try to compile
+// them directly and cause many "expected a declaration" errors
+// because the macros they expect are not defined. To avoid that,
+// make the file a no-op unless one of the macros used by the
+// including translation unit is defined.
+#if defined(CHK_ERR) || defined(CHK_ERRA) || defined(DX_STR_WRAP) || defined(DX_FORMATMESSAGE)
 switch(hr)
 {
 // Commmented out codes are actually alises for other codes
 
-// -------------------------------------------------------------
 // Common Win32 error codes
 // -------------------------------------------------------------
     CHK_ERRA(S_OK)
@@ -3329,3 +3339,5 @@ switch(hr)
 }
 
 return DX_STR_WRAP("Unknown");
+
+#endif // defined(CHK_ERR) || defined(CHK_ERRA) || defined(DX_STR_WRAP) || defined(DX_FORMATMESSAGE)

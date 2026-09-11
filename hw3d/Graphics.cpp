@@ -30,6 +30,7 @@ Graphics::Graphics( HWND hWnd )
 	HRESULT hr;
 
 	// create device and front/back buffers, and swap chain and rendering context
+	// Throw in if failed, which will generate an exception with the HRESULT error code
 	GFX_THROW_FAILED( D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,

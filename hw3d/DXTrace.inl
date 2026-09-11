@@ -1,3 +1,27 @@
+// Debug trace helper (this file is included into the body of
+// `DXTraceW` / `DXTraceA` in `dxerr.cpp` with macros that
+// define `DX_CHAR`, `DX_SPRINTF_S`, `DX_OUTPUTDEBUGSTRING`, etc.).
+//
+// Purpose:
+// - Format a message that includes file, line, error code and an
+//   optional caller-supplied message.
+// - Output the formatted string to the debugger via
+//   `OutputDebugStringW/A` (mapped to `DX_OUTPUTDEBUGSTRING`).
+// - Optionally present a modal message box and break into the
+//   debugger if the user requests it (controlled by `bPopMsgBox`).
+//
+// Note: This file intentionally does not include function
+// declarations or braces; it is included inside the body of the
+// DXTrace function where the macros above are defined.
+
+// This file expects the including TU to define macros such as
+// `DX_CHAR`, `DX_SPRINTF_S`, and `DX_OUTPUTDEBUGSTRING`.
+// If it's compiled standalone (which happens when .inl files are
+// mistakenly added as source files), wrap the contents so it
+// becomes a no-op unless those macros are defined.
+#if defined(DX_CHAR) || defined(DX_SPRINTF_S) || defined(DX_OUTPUTDEBUGSTRING)
+// Small buffers used to build the diagnostic text. `strBufferLine` is
+// used to hold the stringified line number.
 DX_CHAR strBufferLine[128];
 DX_CHAR strBufferError[256];
 DX_CHAR strBuffer[BUFFER_SIZE];
@@ -47,3 +71,5 @@ UNREFERENCED_PARAMETER(bPopMsgBox);
 #endif
 
 return hr;
+
+#endif // defined(DX_CHAR) || defined(DX_SPRINTF_S) || defined(DX_OUTPUTDEBUGSTRING)

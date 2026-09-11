@@ -1,21 +1,31 @@
 if ( !count )
-    return;
+// The file expects `CHK_ERR` or `DX_FORMATMESSAGE` to be defined by
+// the including translation unit (see `dxerr.cpp`). If it's being
+// compiled standalone (e.g. added as a source file by mistake),
+// avoid producing compile errors by being a no-op.
+#if defined(CHK_ERR) || defined(DX_FORMATMESSAGE)
+    // Validate the output buffer before doing any work. If the
+    // caller passed an invalid buffer or zero length, there's
+    // nothing to do.
+    if (desc == nullptr || count == 0)
+    {
+        return;
+    }
 
-*desc = 0;
+    *desc = 0;
 
-// First try to see if FormatMessage knows this hr
-UINT icount = static_cast<UINT>( std::min<size_t>( count, 32767 ) );
+    // First try to see if FormatMessage knows this hr
+    UINT icount = static_cast<UINT>( std::min<size_t>( count, 32767 ) );
 
-DWORD result = DX_FORMATMESSAGE( FORMAT_MESSAGE_FROM_SYSTEM, nullptr, hr,
-                                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), desc, icount, nullptr );
+    DWORD result = DX_FORMATMESSAGE( FORMAT_MESSAGE_FROM_SYSTEM, nullptr, hr,
+                                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), desc, icount, nullptr );
 
-if (result > 0)
-    return;
+    if (result > 0)
+        return;
 
-switch (hr)
+    switch (hr)
 {
 // Commmented out codes are actually alises for other codes
-
 #if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
 
 // -------------------------------------------------------------
@@ -420,3 +430,5 @@ switch (hr)
 // -------------------------------------------------------------
     CHK_ERR(XAPO_E_FORMAT_UNSUPPORTED, "Requested audio format unsupported.")
 }
+
+#endif // defined(CHK_ERR) || defined(DX_FORMATMESSAGE)
