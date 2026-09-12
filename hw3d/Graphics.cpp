@@ -21,7 +21,7 @@ Graphics::Graphics( HWND hWnd )
 	sd.SampleDesc.Quality = 0;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.BufferCount = 1;
-	sd.OutputWindow = hWnd;
+	//sd.OutputWindow = hWnd;
 	// Garbage value to make sure we don't use it without properly initializing it
 	sd.OutputWindow = (HWND)69696969;
 	sd.Windowed = TRUE;
@@ -37,7 +37,7 @@ Graphics::Graphics( HWND hWnd )
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
-		0,
+		D3D11_CREATE_DEVICE_DEBUG, // By enabling the debug layer, we can  get info in the output layer
 		nullptr,
 		0,
 		D3D11_SDK_VERSION,
@@ -79,6 +79,7 @@ void Graphics::EndFrame()
 	HRESULT hr;
 	if( FAILED( hr = pSwap->Present( 1u,0u ) ) )
 	{
+		// Throw exception if device was removed
 		if( hr == DXGI_ERROR_DEVICE_REMOVED )
 		{
 			throw GFX_DEVICE_REMOVED_EXCEPT( pDevice->GetDeviceRemovedReason() );
