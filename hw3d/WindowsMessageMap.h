@@ -20,6 +20,7 @@
 #pragma once
 #include <unordered_map>
 #include "ChiliWin.h"
+#include <string>
 
 class WindowsMessageMap
 {

@@ -64,7 +64,10 @@ Graphics::Graphics( HWND hWnd )
 	// gain access to texture subresource in swap chain (back buffer)
 	ID3D11Resource* pBackBuffer = nullptr;
 	GFX_THROW_INFO( pSwap->GetBuffer( 0,__uuidof(ID3D11Resource),reinterpret_cast<void**>(&pBackBuffer) ) );
-	GFX_THROW_INFO( pDevice->CreateRenderTargetView( pBackBuffer,nullptr,&pTarget ) );
+	// GFX_THROW_INFO( pDevice->CreateRenderTargetView( pBackBuffer,nullptr,&pTarget ) );
+	// Testing
+	GFX_THROW_INFO(pDevice->CreateRenderTargetView(nullptr, nullptr, &pTarget));
+	
 	pBackBuffer->Release();
 }
 

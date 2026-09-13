@@ -1,6 +1,7 @@
 #pragma once
 #include "ChiliWin.h"
 #include <vector>
+#include <string>
 
 class DxgiInfoManager
 {

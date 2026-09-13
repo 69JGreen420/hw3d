@@ -30,6 +30,8 @@ DxgiInfoManager::DxgiInfoManager()
 	}
 
 	HRESULT hr;
+
+	// Call the DLL to get the debug interface (IDXGIInfoQueue) that we can then use to retrieve messages.
 	GFX_THROW_NOINFO( DxgiGetDebugInterface( __uuidof(IDXGIInfoQueue),reinterpret_cast<void**>(&pDxgiInfoQueue) ) );
 }
 
@@ -52,6 +54,9 @@ std::vector<std::string> DxgiInfoManager::GetMessages() const
 {
 	std::vector<std::string> messages;
 	const auto end = pDxgiInfoQueue->GetNumStoredMessages( DXGI_DEBUG_ALL );
+
+	// Loop through messages in the queue, get the size of each message, 
+	// allocate memory for it, and then get the message itself.
 	for( auto i = next; i < end; i++ )
 	{
 		HRESULT hr;
