@@ -136,6 +136,23 @@ void Graphics::DrawTestTriangle()
 	const UINT offset = 0u;
 	pContext->IASetVertexBuffers( 0u,1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
+	// Create pixel shader
+	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
+	wrl::ComPtr<ID3DBlob> pBlob;
+	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
+	GFX_THROW_INFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader));
+
+	// Bind pixel shader
+	pContext->PSSetShader(pPixelShader.Get(), 0, 0);
+
+	// Create vertex shader
+	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
+	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
+	GFX_THROW_INFO(pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader));
+
+	// Bind vertex shader
+	pContext->VSSetShader(pVertexShader.Get(), 0, 0);
+
 	// Input (vertex) layout (2d position only)
 	// We esentially feed the vertex data into the input assembler
 	wrl::ComPtr<ID3D11InputLayout> pInputLayout;
@@ -144,22 +161,16 @@ void Graphics::DrawTestTriangle()
 		{"Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	// Create vertex shader
-	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
-	wrl::ComPtr<ID3DBlob> pBlob;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
-	GFX_THROW_INFO(pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader));
+	// Create input layout
+	GFX_THROW_INFO(pDevice->CreateInputLayout(
+		ied, (UINT)std::size(ied),
+		pBlob->GetBufferPointer(),
+		pBlob->GetBufferSize(),
+		&pInputLayout
+	));
 
-	// Bind vertex shader
-	pContext->VSSetShader(pVertexShader.Get(), 0, 0);
-
-	// Create pixel shader
-	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
-	GFX_THROW_INFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader));
-
-	// Bind pixel shader
-	pContext->PSSetShader(pPixelShader.Get(), 0, 0);
+	// Bind input layout
+	pContext->IASetInputLayout(pInputLayout.Get()); // .Get() returns the raw pointer
 
 	// Bind render target
 	// Note that getting the address of pTarget allows us
