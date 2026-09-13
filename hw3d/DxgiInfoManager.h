@@ -8,6 +8,7 @@ class DxgiInfoManager
 {
 public:
 	DxgiInfoManager();
+	// Destructor is defaulted, as ComPtr will automatically release the resources
 	~DxgiInfoManager() = default;
 	DxgiInfoManager( const DxgiInfoManager& ) = delete;
 	DxgiInfoManager& operator=( const DxgiInfoManager& ) = delete;

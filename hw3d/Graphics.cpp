@@ -57,17 +57,22 @@ Graphics::Graphics( HWND hWnd )
 		nullptr,
 		0,
 		D3D11_SDK_VERSION,
-		&sd,
+		&sd, // Since these are comPtr, they get the address and release the pointer automatically
 		&pSwap,
 		&pDevice,
 		nullptr,
 		&pContext
 	) );
 	// gain access to texture subresource in swap chain (back buffer)
-	wrl::ComPtr<ID3D11Resource> pBackBuffer;
+	wrl::ComPtr<ID3D11Resource> pBackBuffer; // Pointer now templated on the resource type to get the back buffer
+	// GetAddressOf() finds the address but does not release the pointer 
+	pBackBuffer.GetAddressOf();
 	GFX_THROW_INFO( pSwap->GetBuffer( 0,__uuidof(ID3D11Resource),&pBackBuffer ) );
+	// .Get() is needed to get the address of the pointer inside the ComPtr
 	GFX_THROW_INFO( pDevice->CreateRenderTargetView( pBackBuffer.Get(),nullptr,&pTarget ) );
 }
+
+// Destructor is no longer needed as ComPtr automatically releases resources
 
 void Graphics::EndFrame()
 {
