@@ -107,6 +107,7 @@ void Graphics::DrawTestTriangle()
 
 	struct Vertex
 	{
+		// Note that x and y are lumped into a single element (vector)
 		float x;
 		float y;
 	};
@@ -133,7 +134,15 @@ void Graphics::DrawTestTriangle()
 	// Bind vertex buffer to pipeline
 	const UINT stride = sizeof( Vertex );
 	const UINT offset = 0u;
-	pContext->IASetVertexBuffers( 0u,1u,&pVertexBuffer,&stride,&offset );
+	pContext->IASetVertexBuffers( 0u,1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
+
+	// Input (vertex) layout (2d position only)
+	// We esentially feed the vertex data into the input assembler
+	wrl::ComPtr<ID3D11InputLayout> pInputLayout;
+	const D3D11_INPUT_ELEMENT_DESC ied[] =
+	{
+		{"Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
 
 	// Create vertex shader
 	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
@@ -152,9 +161,26 @@ void Graphics::DrawTestTriangle()
 	// Bind pixel shader
 	pContext->PSSetShader(pPixelShader.Get(), 0, 0);
 
-	GFX_THROW_INFO_ONLY( pContext->Draw( (UINT)std::size(vertices), 0u));
+	// Bind render target
+	// Note that getting the address of pTarget allows us
+	// to get the address without freeing the interface
+	// Address is need when getting the parameter of a pointer to a pointer
+	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), nullptr);
 
-	
+	// Set primitive technology to set up triangle list (group of 3 vertices)
+	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// Configure viewport
+	D3D11_VIEWPORT vp;
+	vp.Width = 800;
+	vp.Height = 600;
+	vp.MinDepth = 0;
+	vp.MaxDepth = 1;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	pContext->RSSetViewports(1u, &vp);
+
+	GFX_THROW_INFO_ONLY( pContext->Draw( (UINT)std::size(vertices), 0u));
 }
 
 
