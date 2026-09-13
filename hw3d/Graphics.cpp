@@ -1,10 +1,12 @@
 #include "Graphics.h"
 #include "dxerr.h"
 #include <sstream>
+#include <d3dcompiler.h>
 
 namespace wrl = Microsoft::WRL;
 
 #pragma comment(lib,"d3d11.lib")
+#pragma comment(lib, "D3DCompiler.lib") // Used to compile shaders at runtime
 
 // graphics exception checking/throwing macros (some with dxgi infos)
 #define GFX_EXCEPT_NOINFO(hr) Graphics::HrException( __LINE__,__FILE__,(hr) )
@@ -96,6 +98,8 @@ void Graphics::ClearBuffer( float red,float green,float blue ) noexcept
 	pContext->ClearRenderTargetView( pTarget.Get(),color );
 }
 
+// Understanding how to render the pipeline rn
+// Working step by step through all elements needed.
 void Graphics::DrawTestTriangle()
 {
 	namespace wrl = Microsoft::WRL;
@@ -131,7 +135,18 @@ void Graphics::DrawTestTriangle()
 	const UINT offset = 0u;
 	pContext->IASetVertexBuffers( 0u,1u,&pVertexBuffer,&stride,&offset );
 
-	GFX_THROW_INFO_ONLY( pContext->Draw( 3u,0u ) );
+	// Create vertex shader
+	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
+	wrl::ComPtr<ID3DBlob> pBlob;
+	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
+	GFX_THROW_INFO(pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader));
+
+	// Bind vertex shader
+	pContext->VSSetShader(pVertexShader.Get(), 0, 0);
+
+	GFX_THROW_INFO_ONLY( pContext->Draw( (UINT)std::size(vertices), 0u));
+
+	
 }
 
 
@@ -229,7 +244,7 @@ Graphics::InfoException::InfoException( int line,const char * file,std::vector<s
 
 #ifndef NDEBUG
 	// Show a message box in debug so the developer notices the info immediately
-	MessageBoxA( GetForegroundWindow(), info.c_str(), "Chili Graphics Info", MB_OK | MB_ICONINFORMATION );
+	MessageBoxA( GetForegroundWindow(), info.c_str(), "Chili Graphics Info", MB_OK | MB_ICONWARNING );
 #endif
 }
 
