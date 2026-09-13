@@ -105,19 +105,23 @@ void Graphics::DrawTestTriangle()
 	namespace wrl = Microsoft::WRL;
 	HRESULT hr;
 
-	struct Vertex
+    struct Vertex
 	{
-		// Note that x and y are lumped into a single element (vector)
+		// 2D position
 		float x;
 		float y;
+		// per-vertex color (RGB)
+		float r;
+		float g;
+		float b;
 	};
 
 	// create vertex buffer (1 2d triangle at center of screen)
-	const Vertex vertices[] =
+    const Vertex vertices[] =
 	{
-		{ 0.0f,0.5f },
-		{ 0.5f,-0.5f },
-		{ -0.5f,-0.5f },
+		{  0.0f,  0.5f, 1.0f, 0.0f, 0.0f }, // top - red
+		{  0.5f, -0.5f, 0.0f, 1.0f, 0.0f }, // right - green
+		{ -0.5f, -0.5f, 0.0f, 0.0f, 1.0f }, // left - blue
 	};
 	wrl::ComPtr<ID3D11Buffer> pVertexBuffer;
 	D3D11_BUFFER_DESC bd = {};
@@ -136,19 +140,43 @@ void Graphics::DrawTestTriangle()
 	const UINT offset = 0u;
 	pContext->IASetVertexBuffers( 0u,1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
-	// Create pixel shader
+    // Create pixel shader (compile from HLSL at runtime so the project only needs the .hlsl files)
 	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
 	wrl::ComPtr<ID3DBlob> pBlob;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
-	GFX_THROW_INFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader));
+	UINT shaderFlags = 0u;
+#ifndef NDEBUG
+	shaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+	GFX_THROW_INFO( D3DCompileFromFile(
+		L"PixelShader.hlsl",
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"main",
+		"ps_5_0",
+		shaderFlags,
+		0u,
+		&pBlob,
+		nullptr
+	) );
+	GFX_THROW_INFO( pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader) );
 
 	// Bind pixel shader
 	pContext->PSSetShader(pPixelShader.Get(), 0, 0);
 
 	// Create vertex shader
 	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
-	GFX_THROW_INFO(pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader));
+	GFX_THROW_INFO( D3DCompileFromFile(
+		L"VertexShader.hlsl",
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"main",
+		"vs_5_0",
+		shaderFlags,
+		0u,
+		&pBlob,
+		nullptr
+	) );
+	GFX_THROW_INFO( pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader) );
 
 	// Bind vertex shader
 	pContext->VSSetShader(pVertexShader.Get(), 0, 0);
@@ -156,9 +184,10 @@ void Graphics::DrawTestTriangle()
 	// Input (vertex) layout (2d position only)
 	// We esentially feed the vertex data into the input assembler
 	wrl::ComPtr<ID3D11InputLayout> pInputLayout;
-	const D3D11_INPUT_ELEMENT_DESC ied[] =
+    const D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
 		{"Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	// Create input layout
