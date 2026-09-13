@@ -50,8 +50,8 @@ std::vector<std::string> DxgiInfoManager::GetMessages() const
 		SIZE_T messageLength;
 		// get the size of message i in bytes
 		GFX_THROW_NOINFO( pDxgiInfoQueue->GetMessage( DXGI_DEBUG_ALL,i,nullptr,&messageLength ) );
-		// allocate memory for message
-		auto bytes = std::make_unique<byte[]>( messageLength );
+        // allocate memory for message
+		auto bytes = std::make_unique<unsigned char[]>( messageLength );
 		auto pMessage = reinterpret_cast<DXGI_INFO_QUEUE_MESSAGE*>(bytes.get());
 		// get the message and push its description into the vector
 		GFX_THROW_NOINFO( pDxgiInfoQueue->GetMessage( DXGI_DEBUG_ALL,i,pMessage,&messageLength ) );

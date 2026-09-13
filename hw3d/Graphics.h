@@ -44,10 +44,7 @@ public:
 	void ClearBuffer( float red,float green,float blue ) noexcept;
 
 	// The fun part begins!
-	void DrawTestTriangle()
-	{
-
-	}
+	void DrawTestTriangle();
 private:
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;

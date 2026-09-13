@@ -99,6 +99,66 @@ void Graphics::ClearBuffer( float red,float green,float blue ) noexcept
 	pContext->ClearRenderTargetView( pTarget.Get(),color );
 }
 
+// The fun part begins!
+void Graphics::DrawTestTriangle()
+{
+	namespace wr1 = Microsoft::WRL;
+	HRESULT hr;
+
+	struct Vertex
+	{
+		float x;
+		float y;
+	};
+
+	const Vertex vertices[] =
+	{
+		{ 0.0f, 0.5f },
+		{ 0.5f, -0.5f },
+		{ -0.5f, -0.5f }
+	};
+	// We need a comPtr of buffer to hold our vertex buffer.
+	wr1::ComPtr<ID3D11Buffer> pVertexBuffer;
+
+	// Describe the buffer we want to create.
+	// Note that this doesn't create the buffer, it shows what it'll look like
+	D3D11_BUFFER_DESC bd = {};
+
+	// Here, we are telling Direct3D we want the buffer to be a vertex buffer
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.CPUAccessFlags = 0u;
+	bd.MiscFlags = 0u; // We don't need to worry about misc flags yet
+	
+	// Tell Direct3D how much memory we want for the buffer
+	bd.ByteWidth = sizeof(vertices);
+
+	// Initialises the size of one buffer element
+	bd.StructureByteStride = sizeof(Vertex);
+
+	// Create subresource data
+	D3D11_SUBRESOURCE_DATA sd = {};
+
+	// Tell Direct3D that additional data can be found in vertices data
+	sd.pSysMem = vertices;
+
+	// Our vertex buffer will be filled with an array of pointers to vertices.
+
+	// We pass in the descripter and the subresource into the buffer
+	GFX_THROW_INFO( pDevice->CreateBuffer(&bd, &sd, &pVertexBuffer) );
+
+	// Create the stride and offset to pass into Input Assembler
+	const UINT stride = sizeof(Vertex);
+	const UINT offset = 0u;
+
+	// Pass in parameter to input assembler so the GPU knows wtf is going on
+	pContext->IASetVertexBuffers(0u, 1u, &pVertexBuffer, &stride, &offset);
+
+	// Triangle has 3 vertices, so draw 3 vertices, starting at vertex 0 (the first vertex)
+	pContext->Draw(3u, 0u);
+}
+
 
 // Graphics exception stuff
 Graphics::HrException::HrException( int line,const char * file,HRESULT hr,std::vector<std::string> infoMsgs ) noexcept
