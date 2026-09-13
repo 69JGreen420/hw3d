@@ -2,7 +2,7 @@
 #include "ChiliWin.h"
 #include "ChiliException.h"
 #include <d3d11.h>
-#include <wrl.h>
+#include <wrl.h> // Include the Windows Runtime Library for smart pointers
 #include <vector>
 #include "DxgiInfoManager.h"
 
@@ -42,6 +42,12 @@ public:
 	~Graphics() = default;
 	void EndFrame();
 	void ClearBuffer( float red,float green,float blue ) noexcept;
+
+	// The fun part begins!
+	void DrawTestTriangle()
+	{
+
+	}
 private:
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
