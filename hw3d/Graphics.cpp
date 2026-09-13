@@ -152,6 +152,14 @@ Graphics::HrException::HrException( int line,const char * file,HRESULT hr,std::v
 	{
 		info.pop_back();
 	}
+
+#ifndef NDEBUG
+	// In debug builds, also pop up a message box so the developer sees the error
+	// immediately instead of only in the debugger output window.
+	// Use DXTrace helper which formats and sends the message to OutputDebugString
+	// and will present a MessageBox when the last parameter is true.
+	DXTRACE_ERR_MSGBOX( info.c_str(), hr );
+#endif
 }
 
 const char* Graphics::HrException::what() const noexcept
@@ -218,6 +226,11 @@ Graphics::InfoException::InfoException( int line,const char * file,std::vector<s
 	{
 		info.pop_back();
 	}
+
+#ifndef NDEBUG
+	// Show a message box in debug so the developer notices the info immediately
+	MessageBoxA( GetForegroundWindow(), info.c_str(), "Chili Graphics Info", MB_OK | MB_ICONINFORMATION );
+#endif
 }
 
 
