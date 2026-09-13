@@ -144,6 +144,14 @@ void Graphics::DrawTestTriangle()
 	// Bind vertex shader
 	pContext->VSSetShader(pVertexShader.Get(), 0, 0);
 
+	// Create pixel shader
+	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
+	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
+	GFX_THROW_INFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader));
+
+	// Bind pixel shader
+	pContext->PSSetShader(pPixelShader.Get(), 0, 0);
+
 	GFX_THROW_INFO_ONLY( pContext->Draw( (UINT)std::size(vertices), 0u));
 
 	
