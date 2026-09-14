@@ -1,3 +1,6 @@
+// Note that semantics starting with "SV" cannot be changed.
+// However, any other semantic can be whatever you want
+
 struct VSOut
 {
     float3 color : Color;
