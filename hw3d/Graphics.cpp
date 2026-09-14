@@ -115,14 +115,14 @@ void Graphics::DrawTestTriangle()
 	// create vertex buffer (1 2d triangle at center of screen)
 	const Vertex vertices[] =
 	{
-		{ 0.0f,0.5f },
+		// For a linelist, we need 2 vertices for each connecting point
+		// To draw a line
+		{ 0.0f, 0.5f },
 		{ 0.5f,-0.5f },
+		{ 0.5f, -0.5f },
 		{ -0.5f,-0.5f },
-
-		// Triangle must have anti-clockwise organised vertices
-		{ 0.5f,1.0f },
-		{ 1.0f,0.5f },
-		{ 0.5f,0.5f }
+		{ -0.5f, -0.5f },
+		{ 0.0f, 0.5f }
 	};
 	wrl::ComPtr<ID3D11Buffer> pVertexBuffer;
 	D3D11_BUFFER_DESC bd = {};
@@ -184,7 +184,7 @@ void Graphics::DrawTestTriangle()
 	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), nullptr);
 
 	// Set primitive technology to set up triangle list (group of 3 vertices)
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
 	// Configure viewport
 	D3D11_VIEWPORT vp;
