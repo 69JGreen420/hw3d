@@ -115,14 +115,11 @@ void Graphics::DrawTestTriangle()
 	// create vertex buffer (1 2d triangle at center of screen)
 	const Vertex vertices[] =
 	{
-		// For a linelist, we need 2 vertices for each connecting point
-		// To draw a line
+		// For a linestrip, the vertices has logic to connect each element themself
 		{ 0.0f, 0.5f },
 		{ 0.5f,-0.5f },
-		{ 0.5f, -0.5f },
 		{ -0.5f,-0.5f },
-		{ -0.5f, -0.5f },
-		{ 0.0f, 0.5f }
+		{ 0.0f, 0.5f } // We need to go back to first vertex to wrap around
 	};
 	wrl::ComPtr<ID3D11Buffer> pVertexBuffer;
 	D3D11_BUFFER_DESC bd = {};
@@ -184,7 +181,7 @@ void Graphics::DrawTestTriangle()
 	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), nullptr);
 
 	// Set primitive technology to set up triangle list (group of 3 vertices)
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 
 	// Configure viewport
 	D3D11_VIEWPORT vp;
