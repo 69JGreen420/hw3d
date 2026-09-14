@@ -1,12 +1,6 @@
 // A colour is represnted as 4D (RGB and Alpha)
-struct PSInput
+// However we are not using alpha
+float4 main() : SV_TARGET
 {
-	float4 pos : SV_POSITION;
-	float3 color : Color;
-};
-
-float4 main( PSInput input ) : SV_TARGET
-{
-	// Output the interpolated vertex color with full alpha
-	return float4(input.color, 1.0f);
+	return float4(1.0f, 1.0f, 1.0f, 1.0f);
 }

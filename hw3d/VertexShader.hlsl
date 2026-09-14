@@ -1,22 +1,7 @@
 // We are creating homogenius coordinates for the matrix transformation of the triangle
-struct VSInput
+float4 main( float2 pos : Position ) : SV_Position
 {
-    float2 pos : Position;
-    float3 color : Color;
-};
-
-struct PSInput
-{
-    float4 pos : SV_POSITION;
-    float3 color : Color;
-};
-
-PSInput main(VSInput input)
-{
-    PSInput output;
-    // position -> 4D clip space
-    output.pos = float4(input.pos.x, input.pos.y, 0.0f, 1.0f);
-    // pass color through to pixel shader
-    output.color = input.color;
-    return output;
+	// We return the 4-dimensional value for the 2D triangle
+    // 4D is represented by (X, Y, Z, W)
+    return float4(pos.x, pos.y, 0.0f, 1.0f);
 }
