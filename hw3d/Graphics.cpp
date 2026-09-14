@@ -131,7 +131,7 @@ void Graphics::DrawTestTriangle()
 		{ -0.5f, -0.5f, 0, 0, 255, 0 },
 		{ -0.3f, 0.3f, 0, 255, 0, 0 },
 		{ 0.3f, 0.3f, 0, 0, 255, 0},
-		{ 0.0f, -0.8f, 255, 0, 0, 0 },
+		{ 0.0f, -1.8f, 255, 0, 0, 0 }, // The vertex points down but gets clipped off
 	};
 
 	// Creating pos and color structs allowing external access
@@ -229,12 +229,15 @@ void Graphics::DrawTestTriangle()
 
 	// Configure viewport
 	D3D11_VIEWPORT vp;
-	vp.Width = 800;
-	vp.Height = 600;
+
+	// Changing the viewport size changes where the render will happen
+	// depending on the start point configurations
+	vp.Width = 400;
+	vp.Height = 300;
 	vp.MinDepth = 0;
 	vp.MaxDepth = 1;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
+	vp.TopLeftX = 100;
+	vp.TopLeftY = 100;
 	pContext->RSSetViewports(1u, &vp);
 
 	// We use DrawIndexed() as we are using an index buffer to draw the triangle
