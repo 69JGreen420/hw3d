@@ -107,22 +107,36 @@ void Graphics::DrawTestTriangle()
 
 	struct Vertex
 	{
-		// Note that x and y are lumped into a single element (vector)
-		float x;
-		float y;
-		unsigned char r;
-		unsigned char g;
-		unsigned char b;
-		unsigned char a;
+		struct
+		{
+			// Note that x and y are lumped into a single element (vector)
+			float x;
+			float y;
+		} pos;
+
+		struct
+		{
+			unsigned char r;
+			unsigned char g;
+			unsigned char b;
+			unsigned char a;
+		} color;
 	};
 
 	// create vertex buffer (1 2d triangle at center of screen)
-	const Vertex vertices[] =
+	Vertex vertices[] =
 	{
-		{ 0.0f,0.5f,255.0f,0.0f,0.0f },
-		{ 0.5f,-0.5f,0.0f,255.0f,0.0f },
-		{ -0.5f,-0.5f,0.0f,0.0f,255.0f },
+		{ 0.0f, 0.5f, 255, 0, 0, 0 },
+		{ 0.5f, -0.5f, 0, 255, 0, 0 },
+		{ -0.5f, -0.5f, 0, 0, 255, 0 },
+		{ -0.3f, 0.3f, 0, 255, 0, 0 },
+		{ 0.3f, 0.3f, 0, 0, 255, 0},
+		{ 0.0f, -0.8f, 255, 0, 0, 0 },
 	};
+
+	// Creating pos and color structs allowing external access
+	vertices[0].color.g = 255;
+
 	wrl::ComPtr<ID3D11Buffer> pVertexBuffer;
 	D3D11_BUFFER_DESC bd = {};
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -140,11 +154,37 @@ void Graphics::DrawTestTriangle()
 	const UINT offset = 0u;
 	pContext->IASetVertexBuffers( 0u,1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
+	// Create index buffer - 16 bytes
+	// We esentially initialize which vertex the index should go to
+	const unsigned short indices[] =
+	{
+		0, 1, 2,
+		0, 2, 3,
+		0, 4, 1,
+		2, 1, 5
+	};
+
+	wrl::ComPtr<ID3D11Buffer> pIndexBuffer;
+	D3D11_BUFFER_DESC ibd = {};
+	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibd.Usage = D3D11_USAGE_DEFAULT;
+	ibd.CPUAccessFlags = 0u;
+	ibd.MiscFlags = 0u;
+	ibd.ByteWidth = sizeof(indices);
+	ibd.StructureByteStride = sizeof(unsigned short);
+
+	D3D11_SUBRESOURCE_DATA isd = {};
+	isd.pSysMem = indices;
+	GFX_THROW_INFO(pDevice->CreateBuffer(&ibd, &isd, &pIndexBuffer));
+
 	// Create pixel shader
 	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
 	wrl::ComPtr<ID3DBlob> pBlob;
 	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)); // Reads .cso file and stores it as binary data
 	GFX_THROW_INFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader));
+
+	// Bind index buffer
+	pContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 
 	// Bind pixel shader
 	pContext->PSSetShader(pPixelShader.Get(), 0, 0);
@@ -197,7 +237,10 @@ void Graphics::DrawTestTriangle()
 	vp.TopLeftY = 0;
 	pContext->RSSetViewports(1u, &vp);
 
-	GFX_THROW_INFO_ONLY( pContext->Draw( (UINT)std::size(vertices), 0u));
+	// We use DrawIndexed() as we are using an index buffer to draw the triangle
+	// as our geometry is described by a vertex buffer + a list of indices
+	// telling DirectX which vertices form our triangles
+	GFX_THROW_INFO_ONLY( pContext->DrawIndexed( (UINT)std::size(indices), 0u, 0u));
 }
 
 
