@@ -110,14 +110,18 @@ void Graphics::DrawTestTriangle()
 		// Note that x and y are lumped into a single element (vector)
 		float x;
 		float y;
+		unsigned char r;
+		unsigned char g;
+		unsigned char b;
+		unsigned char a;
 	};
 
 	// create vertex buffer (1 2d triangle at center of screen)
 	const Vertex vertices[] =
 	{
-		{ 0.0f,0.5f },
-		{ 0.5f,-0.5f },
-		{ -0.5f,-0.5f },
+		{ 0.0f,0.5f,255.0f,0.0f,0.0f },
+		{ 0.5f,-0.5f,0.0f,255.0f,0.0f },
+		{ -0.5f,-0.5f,0.0f,0.0f,255.0f },
 	};
 	wrl::ComPtr<ID3D11Buffer> pVertexBuffer;
 	D3D11_BUFFER_DESC bd = {};
@@ -159,6 +163,8 @@ void Graphics::DrawTestTriangle()
 	const D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
 		{"Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		// We offset by 8 bytes as this is where the colour element starts
+		{"Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	// Create input layout
