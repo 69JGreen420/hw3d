@@ -118,6 +118,11 @@ void Graphics::DrawTestTriangle()
 		{ 0.0f,0.5f },
 		{ 0.5f,-0.5f },
 		{ -0.5f,-0.5f },
+
+		// Triangle must have anti-clockwise organised vertices
+		{ 0.5f,1.0f },
+		{ 1.0f,0.5f },
+		{ 0.5f,0.5f }
 	};
 	wrl::ComPtr<ID3D11Buffer> pVertexBuffer;
 	D3D11_BUFFER_DESC bd = {};
