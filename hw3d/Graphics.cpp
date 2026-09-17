@@ -196,7 +196,7 @@ void Graphics::DrawTestTriangle(float angle, float x, float y)
 		// This is a floating point 4x4 matrix, however we don't access it directly
 		dx::XMMATRIX transform;
 	};
-	const ConstantBuffer cb =
+    const ConstantBuffer cb =
 	{
 		{
 			// Note that hlsl defaults to a column matrix, so we tell it its a row matrix
@@ -205,7 +205,8 @@ void Graphics::DrawTestTriangle(float angle, float x, float y)
 				// Remember the multiplication order matters
 				dx::XMMatrixRotationZ(angle) *  
 				dx::XMMatrixScaling(3.0f / 4.0f, 1.0f, 1.0f) *
-				dx::XMMatrixTranslation(3.0f / 4.0f, 1.0f, 0.0f)
+				// Use the passed-in mouse coordinates for translation
+				dx::XMMatrixTranslation(x, y, 0.0f)
 			)
 		}
 	};
@@ -213,10 +214,10 @@ void Graphics::DrawTestTriangle(float angle, float x, float y)
 
 	// Create constant buffer resource
 	wrl::ComPtr<ID3D11Buffer> pConstantBuffer;
-	D3D11_BUFFER_DESC cbd;
+    D3D11_BUFFER_DESC cbd;
 	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbd.Usage = D3D11_USAGE_DYNAMIC; // We use dynamic usage as it updates once per frame
-	// Since we have dynamic usage, we need CPU access flags so we can read and write
+	// We supply initial data each frame when creating the buffer, so use DYNAMIC
+	cbd.Usage = D3D11_USAGE_DYNAMIC;
 	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cbd.MiscFlags = 0u;
 	cbd.ByteWidth = sizeof(cb);
