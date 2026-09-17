@@ -2,8 +2,11 @@
 #include "dxerr.h"
 #include <sstream>
 #include <d3dcompiler.h>
+#include <cmath>
+#include <DirectXMath.h>
 
 namespace wrl = Microsoft::WRL;
+namespace dx = DirectX;
 
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib") // Used to compile shaders at runtime
@@ -189,24 +192,21 @@ void Graphics::DrawTestTriangle(float angle)
 	// Create constant buffer for transformation matrix
 	struct ConstantBuffer 
 	{
-		// We put the buffer into a 4x4 matrix
-		struct
-		{
-			float Element[4][4];
-		} transform;
+		// Replace 2x2 array with DirectXMath
+		// This is a floating point 4x4 matrix, however we don't access it directly
+		dx::XMMATRIX transform;
 	};
-	const ConstantBuffer cb
+	const ConstantBuffer cb =
 	{
 		{
-			// This is the matrix that we initialised in an array
-			// This is the rotation matrix around Z
-			// We need to shrink X-coordinates as the shape gets distorted
-			(3.0f / 4.0f) * std::cos(angle),    std::sin(angle), 0.0f, 0.0f,
-			(3.0f / 4.0f) * -std::sin(angle),   std::cos(angle), 0.0f, 0.0f,
-			0.0f,								0.0f,			 1.0f, 0.0f,
-			0.0f,								0.0f,			 0.0f, 1.0f,
+			dx::XMMatrixMultiply
+			(
+				dx::XMMatrixRotationZ(angle),
+				dx::XMMatrixScaling(3.0f / 4.0f, 1.0f, 1.0f)
+			)
 		}
 	};
+
 
 	// Create constant buffer resource
 	wrl::ComPtr<ID3D11Buffer> pConstantBuffer;
