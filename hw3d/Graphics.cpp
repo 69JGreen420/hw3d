@@ -103,7 +103,7 @@ void Graphics::ClearBuffer( float red,float green,float blue ) noexcept
 
 // Understanding how to render the pipeline rn
 // Working step by step through all elements needed.
-void Graphics::DrawTestTriangle(float angle)
+void Graphics::DrawTestTriangle(float angle, float x, float y)
 {
 	namespace wrl = Microsoft::WRL;
 	HRESULT hr;
@@ -199,10 +199,13 @@ void Graphics::DrawTestTriangle(float angle)
 	const ConstantBuffer cb =
 	{
 		{
-			dx::XMMatrixMultiply
+			// Note that hlsl defaults to a column matrix, so we tell it its a row matrix
+			dx::XMMatrixTranspose
 			(
-				dx::XMMatrixRotationZ(angle),
-				dx::XMMatrixScaling(3.0f / 4.0f, 1.0f, 1.0f)
+				// Remember the multiplication order matters
+				dx::XMMatrixRotationZ(angle) *  
+				dx::XMMatrixScaling(3.0f / 4.0f, 1.0f, 1.0f) *
+				dx::XMMatrixTranslation(3.0f / 4.0f, 1.0f, 0.0f)
 			)
 		}
 	};

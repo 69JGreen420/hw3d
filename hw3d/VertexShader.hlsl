@@ -10,8 +10,7 @@ struct VSOut
 cbuffer CBuf
 {
     // By initialising the matrix, the Vertex Shader has access
-    // Note that hlsl defaults to a column matrix, so we tell it its a row matrix
-    row_major matrix transform;
+    matrix transform;
 };
 // We are creating homogenius coordinates for the matrix transformation of the triangle
 // We don't need semantics at the end as it's passed into the struct
