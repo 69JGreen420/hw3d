@@ -7,6 +7,12 @@ struct VSOut
     float4 pos : SV_Position;
 };
 
+cbuffer CBuf
+{
+    // By initialising the matrix, the Vertex Shader has access
+    // Note that hlsl defaults to a column matrix, so we tell it its a row matrix
+    row_major matrix transform;
+};
 // We are creating homogenius coordinates for the matrix transformation of the triangle
 // We don't need semantics at the end as it's passed into the struct
 VSOut main( float2 pos : Position, float3 color : Color )
@@ -14,7 +20,8 @@ VSOut main( float2 pos : Position, float3 color : Color )
     VSOut vso;
     // We return the 4-dimensional value for the 2D triangle
     // 4D is represented by (X, Y, Z, W)
-    vso.pos = float4(pos.x, pos.y, 0.0f, 1.0f);
+    // mul multiplies the vertices by the matrix transformation.
+    vso.pos = mul(float4(pos.x, pos.y, 0.0f, 1.0f), transform);
     vso.color = color; // Colour is determined by the rasterizer
 	
     return vso;

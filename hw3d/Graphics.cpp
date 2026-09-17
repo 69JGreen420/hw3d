@@ -124,14 +124,14 @@ void Graphics::DrawTestTriangle(float angle)
 	};
 
 	// create vertex buffer (1 2d triangle at center of screen)
-	Vertex vertices[] =
+    Vertex vertices[] =
 	{
-		{ 0.0f, 0.5f, 255, 0, 0, 0 },
-		{ 0.5f, -0.5f, 0, 255, 0, 0 },
-		{ -0.5f, -0.5f, 0, 0, 255, 0 },
-		{ -0.3f, 0.3f, 0, 255, 0, 0 },
-		{ 0.3f, 0.3f, 0, 0, 255, 0},
-		{ 0.0f, -0.8f, 255, 0, 0, 0 },
+		{ 0.0f, 0.5f,   255,   0,   0, 255 },
+		{ 0.5f,-0.5f,     0, 255,   0, 255 },
+		{-0.5f,-0.5f,     0,   0, 255, 255 },
+		{-0.3f, 0.3f,     0, 255,   0, 255 },
+		{ 0.3f, 0.3f,     0,   0, 255, 255 },
+		{ 0.0f,-1.0f,   255,   0,   0, 255 },
 	};
 
 	// Creating pos and color structs allowing external access
@@ -193,17 +193,18 @@ void Graphics::DrawTestTriangle(float angle)
 		struct
 		{
 			float Element[4][4];
-		} transformation;
+		} transform;
 	};
 	const ConstantBuffer cb
 	{
 		{
 			// This is the matrix that we initialised in an array
 			// This is the rotation matrix around Z
-			std::cos(angle),  std::sin(angle), 0.0f, 0.0f,
-			-std::sin(angle), std::cos(angle), 0.0f, 0.0f,
-			0.0f,			  0.0f,			   1.0f, 0.0f,
-			0.0f,			  0.0f,			   0.0f, 1.0f,
+			// We need to shrink X-coordinates as the shape gets distorted
+			(3.0f / 4.0f) * std::cos(angle),    std::sin(angle), 0.0f, 0.0f,
+			(3.0f / 4.0f) * -std::sin(angle),   std::cos(angle), 0.0f, 0.0f,
+			0.0f,								0.0f,			 1.0f, 0.0f,
+			0.0f,								0.0f,			 0.0f, 1.0f,
 		}
 	};
 
@@ -221,8 +222,9 @@ void Graphics::DrawTestTriangle(float angle)
 	csd.pSysMem = &cb;
 	GFX_THROW_INFO(pDevice->CreateBuffer(&cbd, &csd, &pConstantBuffer));
 
-	// Bind constant buffer to vertex shader
-	pContext->VSGetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+    // Bind constant buffer to vertex shader
+	pContext->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+
 	// Bind pixel shader
 	pContext->PSSetShader(pPixelShader.Get(), 0, 0);
 
