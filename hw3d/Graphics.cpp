@@ -100,7 +100,7 @@ void Graphics::ClearBuffer( float red,float green,float blue ) noexcept
 
 // Understanding how to render the pipeline rn
 // Working step by step through all elements needed.
-void Graphics::DrawTestTriangle()
+void Graphics::DrawTestTriangle(float angle)
 {
 	namespace wrl = Microsoft::WRL;
 	HRESULT hr;
@@ -186,6 +186,43 @@ void Graphics::DrawTestTriangle()
 	// Bind index buffer
 	pContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 
+	// Create constant buffer for transformation matrix
+	struct ConstantBuffer 
+	{
+		// We put the buffer into a 4x4 matrix
+		struct
+		{
+			float Element[4][4];
+		} transformation;
+	};
+	const ConstantBuffer cb
+	{
+		{
+			// This is the matrix that we initialised in an array
+			// This is the rotation matrix around Z
+			std::cos(angle),  std::sin(angle), 0.0f, 0.0f,
+			-std::sin(angle), std::cos(angle), 0.0f, 0.0f,
+			0.0f,			  0.0f,			   1.0f, 0.0f,
+			0.0f,			  0.0f,			   0.0f, 1.0f,
+		}
+	};
+
+	// Create constant buffer resource
+	wrl::ComPtr<ID3D11Buffer> pConstantBuffer;
+	D3D11_BUFFER_DESC cbd;
+	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbd.Usage = D3D11_USAGE_DYNAMIC; // We use dynamic usage as it updates once per frame
+	// Since we have dynamic usage, we need CPU access flags so we can read and write
+	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbd.MiscFlags = 0u;
+	cbd.ByteWidth = sizeof(cb);
+	cbd.StructureByteStride = 0u;
+	D3D11_SUBRESOURCE_DATA csd = {};
+	csd.pSysMem = &cb;
+	GFX_THROW_INFO(pDevice->CreateBuffer(&cbd, &csd, &pConstantBuffer));
+
+	// Bind constant buffer to vertex shader
+	pContext->VSGetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
 	// Bind pixel shader
 	pContext->PSSetShader(pPixelShader.Get(), 0, 0);
 
