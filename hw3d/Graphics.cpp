@@ -118,6 +118,7 @@ void Graphics::DrawTestTriangle(float angle, float x, float y)
 			// Note that x and y are lumped into a single element (vector)
 			float x;
 			float y;
+			float z;
 		} pos;
 
 		struct
@@ -132,12 +133,14 @@ void Graphics::DrawTestTriangle(float angle, float x, float y)
 	// create vertex buffer (1 2d triangle at center of screen)
     Vertex vertices[] =
 	{
-		{ 0.0f, 0.5f,   255,   0,   0, 255 },
-		{ 0.5f,-0.5f,     0, 255,   0, 255 },
-		{-0.5f,-0.5f,     0,   0, 255, 255 },
-		{-0.3f, 0.3f,     0, 255,   0, 255 },
-		{ 0.3f, 0.3f,     0,   0, 255, 255 },
-		{ 0.0f,-1.0f,   255,   0,   0, 255 },
+		{ -1.0f, -1.0f, -1.0f,		255, 0,   0,   255 },
+		{  1.0f, -1.0f, -1.0f,		0,   255, 0,   255 },
+		{ -1.0f,  1.0f, -1.0f,		0,   0,   255, 255 },
+		{  1.0f,  1.0f, -1.0f,		255, 255, 0,   255 },
+		{ -1.0f, -1.0f,  1.0f,		255, 0,   255, 255 },
+		{  1.0f, -1.0f,  1.0f,		0,   0,   0,   255 },
+		{ -1.0f,  1.0f,  1.0f,		0,   0,   0,   255 },
+		{  1.0f,  1.0f,  1.0f,		255, 255, 255, 255 }, 
 	};
 
 	// Creating pos and color structs allowing external access
@@ -164,10 +167,12 @@ void Graphics::DrawTestTriangle(float angle, float x, float y)
 	// We esentially initialize which vertex the index should go to
 	const unsigned short indices[] =
 	{
-		0, 1, 2,
-		0, 2, 3,
-		0, 4, 1,
-		2, 1, 5
+		0, 2, 1,  2, 3, 1,
+		1, 3, 5,  3, 7, 5,
+		2, 6, 3,  3, 6, 7,
+		4, 5, 7,  4, 7, 6,
+		0, 4, 2,  2, 4, 6,
+		0, 1, 4,  1, 5, 4
 	};
 
 	wrl::ComPtr<ID3D11Buffer> pIndexBuffer;
@@ -199,17 +204,19 @@ void Graphics::DrawTestTriangle(float angle, float x, float y)
 		// This is a floating point 4x4 matrix, however we don't access it directly
 		dx::XMMATRIX transform;
 	};
-    const ConstantBuffer cb =
+	const ConstantBuffer cb =
 	{
 		{
 			// Note that hlsl defaults to a column matrix, so we tell it its a row matrix
 			dx::XMMatrixTranspose
 			(
 				// Remember the multiplication order matters
-				dx::XMMatrixRotationZ(angle) *  
-				dx::XMMatrixScaling(3.0f / 4.0f, 1.0f, 1.0f) *
+				dx::XMMatrixRotationZ(angle) *
+				dx::XMMatrixRotationX(angle)*
 				// Use the passed-in mouse coordinates for translation
-				dx::XMMatrixTranslation(x, y, 0.0f)
+				// We move z-axis back so we can see the cube better
+				dx::XMMatrixTranslation(x, y, 4.0f) *
+				dx::XMMatrixPerspectiveLH(1.0f, (3.0f / 4.0f), 0.5f, 10.0f)
 			)
 		}
 	};
